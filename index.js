@@ -23,6 +23,12 @@ updateStatus(
   "Please click the new button to create the stream first."
 );
 
+
+function onMessage(event) {
+  const message = event.data;
+  console.log("Received message:", message);
+}
+
 // Create a new WebRTC session when clicking the "New" button
 async function createNewSession() {
   updateStatus(statusElement, "Creating new session... please wait");
@@ -62,6 +68,12 @@ async function createNewSession() {
     if (event.track.kind === "audio" || event.track.kind === "video") {
       mediaElement.srcObject = event.streams[0];
     }
+  };
+
+    // When receiving a message, display it in the status element
+  peerConnection.ondatachannel = (event) => {
+    const dataChannel = event.channel;
+    dataChannel.onmessage = onMessage;
   };
 
   // Set server's SDP as remote description

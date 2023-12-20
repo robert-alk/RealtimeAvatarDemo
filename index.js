@@ -23,12 +23,18 @@ updateStatus(
   "Please click the new button to create the stream first."
 );
 
+
+function onMessage(event) {
+  const message = event.data;
+  console.log("Received message:", message);
+}
+
 // Create a new WebRTC session when clicking the "New" button
 async function createNewSession() {
   updateStatus(statusElement, "Creating new session... please wait");
 
   const avatar = avatarName.value;
-  const voice = voiceName.value;
+  const voice = voiceID.value;
 
   // call the new interface to get the server's offer SDP and ICE server to create a new RTCPeerConnection
   sessionInfo = await newSession("high", avatar, voice);
@@ -62,6 +68,12 @@ async function createNewSession() {
     if (event.track.kind === "audio" || event.track.kind === "video") {
       mediaElement.srcObject = event.streams[0];
     }
+  };
+
+    // When receiving a message, display it in the status element
+  peerConnection.ondatachannel = (event) => {
+    const dataChannel = event.channel;
+    dataChannel.onmessage = onMessage;
   };
 
   // Set server's SDP as remote description
@@ -168,14 +180,16 @@ document
   .addEventListener("click", closeConnectionHandler);
 
 // new session
-async function newSession(quality, avatar_name, voice_name) {
+async function newSession(quality, avatar_name, voice_id) {
   const response = await fetch(`${SERVER_URL}/v1/realtime.new`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "X-Api-Key": apiKey,
     },
-    body: JSON.stringify({ quality, avatar_name, voice_name }),
+    body: JSON.stringify({ quality, avatar_name, voice: {
+      voice_id: voice_id,
+    }, }),
   });
   if (response.status === 500) {
     console.error("Server error");

@@ -38,12 +38,10 @@ async function createNewSession() {
 
   // call the new interface to get the server's offer SDP and ICE server to create a new RTCPeerConnection
   sessionInfo = await newSession("high", avatar, voice);
-  const { sdp: serverSdp, ice_servers: iceServers } = sessionInfo;
+  const { sdp: serverSdp, ice_servers2: iceServers } = sessionInfo;
 
   // Create a new RTCPeerConnection
-  peerConnection = new RTCPeerConnection({ iceServers: [] });
-  let formattedIceServers = iceServers.map((server) => ({ urls: server }));
-  peerConnection.setConfiguration({ iceServers: formattedIceServers });
+  peerConnection = new RTCPeerConnection({ iceServers: iceServers });
 
   // When ICE candidate is available, send to the server
   peerConnection.onicecandidate = ({ candidate }) => {
